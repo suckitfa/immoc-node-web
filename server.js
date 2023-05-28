@@ -3,6 +3,7 @@ const http = require('http')
 const fs = require('fs')
 const { parse } = require('path')
 const { url } = require('inspector')
+const querystring = require('querystring')
 // 创建服务器
 // 获取服务器的实例对象
 const server = http.createServer((req, res) => {
@@ -15,11 +16,15 @@ const server = http.createServer((req, res) => {
     // res.end('<h1>hello world</h1>')
 })
 server.on('request',(req,res) => {
-    const urlParsedObj = parse(req.url,true)
+    // const urlParsedObj = parse(req.url,true)
     // parse url
-    console.log('urlParsedObj = ',urlParsedObj)
-    const method = req.method
-    console.log('method = ',method)
+    // console.log('urlParsedObj = ',urlParsedObj)
+    // const method = req.method
+    // console.log('method = ',method)
+    // console.log('req.url = ',req.url)
+    // const url = new URL(req.url,`http://${req.headers.host}`)
+    // console.log('url = ',url)
+    // console.log(url.parse(req.url))
     switch(req.url) {
         case '/':
             getIndexHtml(res)
@@ -27,10 +32,26 @@ server.on('request',(req,res) => {
         case '/doggee.jpeg':
             getDoggeeJpeg(res)
             break;
+        case '/post':
+            handlePost(req,res)
+            break;
         default:
             break;
     }
 })
+
+const handlePost = (req,res) => {
+    let postData = ''
+    req.on('data',(chunk) => {
+        postData += chunk.toString()
+    })
+    req.on('end',() => {
+        postData = querystring.parse(postData)
+        console.log('postData = ',postData)
+        res.end('ok')
+    })
+}
+
 const getIndexHtml = (res) => {   
     fs.readFile('./index.html',(err,data) => {
         if(err) {
